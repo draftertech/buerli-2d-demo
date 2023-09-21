@@ -1,7 +1,4 @@
-* {
-  box-sizing: border-box;
-}
-
+/* Ensure full height for html and body */
 html,
 body,
 #root {
@@ -15,7 +12,31 @@ body {
   background: #f0f0f0;
 }
 
-.fade-out {
-  opacity: 0;
-  transition: opacity 1.5s ease-out;
+/* Ensure the Tabs and TabPane take full height */
+.ant-tabs, .ant-tabs-content, .ant-tabs-tabpane {
+  height: 100%;
+}
+/* Outline for each tab label */
+.ant-tabs .ant-tabs-tab {
+    border: 1px solid #000;  /* Outline color */
+    margin-right: 8px;  /* Space between tabs */
+    border-radius: 4px;  /* Rounded corners */
+    transition: border-color 0.3s;  /* Smooth transition for hover effects */
+
+    /* Set specific width and height for each tab */
+    width: 100px;  /* Adjust as needed */
+    height: 40px;  /* Adjust as needed */
+    display: flex;  /* Helps to center the text inside the tab */
+    justify-content: center;  /* Center the text horizontally */
+    align-items: center;  /* Center the text vertically */
+}
+
+/* Optional: Add a hover effect for better user feedback */
+.ant-tabs .ant-tabs-tab:hover {
+    border-color: #007bff;  /* Change to desired hover color */
+}
+
+/* Optional: Different outline for the active tab */
+.ant-tabs .ant-tabs-tab-active {
+    border-color: #007bff;  /* Active tab outline color */
 }
