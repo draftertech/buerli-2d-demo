@@ -5,7 +5,7 @@ import { ViewType, history } from '@buerli.io/headless' // EdgeTypes
 import { headless, BuerliGeometry } from '@buerli.io/react'
 import { Canvas } from '@react-three/fiber'
 import { Resize, Center, Bounds, OrbitControls, Environment } from '@react-three/drei'
-import { message } from 'antd'
+import { message, Tabs } from 'antd'
 import 'antd/dist/antd.css'
 import { DrawingID } from '@buerli.io/core'
 
@@ -15,21 +15,36 @@ const buerli = headless(history, 'ws://localhost:9091')
 
 interface SceneProps {
   drawingId: DrawingID
-  file: File | null
-  setFileLoaded: React.Dispatch<React.SetStateAction<any>>
+  width?: number
+  [key: string]: any
+}
+
+interface scene2DProps {
+  drawingId: DrawingID
+  prod: number | null
   width?: number
   [key: string]: any
 }
 
 export default function App() {
   const drawingId = buerli.useDrawingId()
-  const [file, setFile] = useState<File | null>(null)
-  const [fileLoaded, setFileLoaded] = useState(null)
+  const [fileLoaded, setFileLoaded] = useState<boolean | null>(null)
+  const [prod, setProd] = useState<number | null>(null)
+
+  const handleFileLoad = async (selectedFile: File) => {
+    try {
+      const loadedProd = await loadPartFromFile(selectedFile)
+      setProd(loadedProd)
+    } catch (error) {
+      console.error('Failed to load part:', error)
+    }
+  }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files && event.target.files[0]
     if (selectedFile) {
-      setFile(selectedFile)
+      setFileLoaded(true)
+      handleFileLoad(selectedFile)
     }
   }
 
@@ -50,14 +65,40 @@ export default function App() {
           </button>
         </div>
       )}
-      <Canvas shadows gl={{ antialias: true }} orthographic camera={{ position: [0, 2.5, 10], zoom: 100 }}>
-        <color attach="background" args={['#f0f0f0']} />
-        <ambientLight />
-        <spotLight position={[-10, 5, -15]} angle={0.2} castShadow />
-        <Scene drawingId={drawingId} file={file} setFileLoaded={setFileLoaded} />
-        <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI} />
-        <Environment preset="city" />
-      </Canvas>
+      <Tabs
+        defaultActiveKey="3D"
+        onChange={key => console.info('Tab changed to:', key)}
+        items={[
+          {
+            label: '3D',
+            key: '3D',
+            children: (
+              <Canvas shadows gl={{ antialias: true }} orthographic camera={{ position: [0, 2.5, 10], zoom: 100 }}>
+                <color attach="background" args={['#f0f0f0']} />
+                <ambientLight />
+                <spotLight position={[-10, 5, -15]} angle={0.2} castShadow />
+                <Scene drawingId={drawingId} />
+                <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI} />
+                <Environment preset="city" />
+              </Canvas>
+            ),
+          },
+          {
+            label: '2D',
+            key: '2D',
+            children: (
+              <Canvas shadows gl={{ antialias: true }} orthographic camera={{ position: [0, 2.5, 10], zoom: 100 }}>
+                <color attach="background" args={['#f0f0f0']} />
+                <ambientLight />
+                <spotLight position={[-10, 5, -15]} angle={0.2} castShadow />
+                <Scene2D drawingId={drawingId} prod={prod} />
+                <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI} />
+                <Environment preset="city" />
+              </Canvas>
+            ),
+          },
+        ]}
+      />
     </>
   )
 }
@@ -66,53 +107,48 @@ function isValidExtension(ext: string) {
   return ['step', 'stp'].includes(ext)
 }
 
-function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }: SceneProps) {
-  const geometry = useRef<Group>(null)
-  const [view2dId, setview2dId] = useState<number | null>(null)
-  useEffect(() => {
-    if (!file) return // Don't execute if no file is selected
+async function loadPartFromFile(file: File): Promise<number | null> {
+  return new Promise(async (resolve, reject) => {
+    if (!file) {
+      message.error('No file selected.')
+      reject(new Error('No file selected.'))
+      return
+    }
 
-    buerli.run(async api => {
-      // Read the blob content using FileReader
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
+    const ext = file?.name.split('.').pop()?.toLowerCase() || ''
+    if (!isValidExtension(ext)) {
+      message.error('Invalid file format. Please upload a .stp or .step file.')
+      reject(new Error('Only *.stp or *.step files are allowed.'))
+      return
+    }
 
-        reader.onload = async () => {
-          const ext = file?.name.split('.').pop()?.toLowerCase() || ''
-          if (!isValidExtension(ext)) {
-            message.error('Invalid file format. Please upload a .stp or .step file.')
-            throw new Error('Only accepting *.stp or *.step files.')
+    const reader = new FileReader()
+
+    reader.onload = async () => {
+      const result = reader.result
+      if (result instanceof ArrayBuffer) {
+        try {
+          const prodArray = await buerli.run(api => api.load(result, 'stp'))
+          if (!prodArray || prodArray.length === 0) {
+            reject(new Error('Unable to load ArrayBuffer from file.'))
+          } else {
+            resolve(prodArray[0])
           }
-          setFileLoaded(true)
-          const result = reader.result
-          if (!(result instanceof ArrayBuffer)) {
-            reject(new Error('Unexpected file content.'))
-            return // exit early due to invalid content
-          }
-          const prodArray = await api.load(result, 'stp')
-          if (!prodArray) {
-            throw new Error('Unable to load ArrayBuffer from file.')
-          }
-          const [prod] = prodArray
-
-          // view2dId =
-          // await api.place2DViews(prod, [{ viewType: ViewType.ISO, vector: { x: 0, y: 0, z: 0 } }])
-          const viewIdArray = await api.create2DViews(prod, [ViewType.TOP])
-          if (viewIdArray) {
-            const [viewId] = viewIdArray
-            setview2dId(viewId)
-          }
-
-          // const selection = (await api.selectGeometry(EdgeTypes, 2)).map(sel => sel.graphicId)
-
-          resolve(prod)
+        } catch (error) {
+          reject(error)
         }
+      } else {
+        reject(new Error('Unexpected file content.'))
+      }
+    }
 
-        reader.onerror = reject
-        reader.readAsArrayBuffer(file)
-      })
-    })
-  }, [file, setFileLoaded])
+    reader.onerror = err => reject(err)
+    reader.readAsArrayBuffer(file)
+  })
+}
+
+function Scene({ drawingId, width = 50, ...props }: SceneProps) {
+  const geometry = useRef<Group>(null)
 
   useLayoutEffect(() => {
     geometry.current?.traverse(obj => {
@@ -134,6 +170,40 @@ function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }: ScenePr
         <Resize scale={2}>
           <Center top ref={geometry} rotation={[0, -Math.PI / 4, 0]}>
             <BuerliGeometry drawingId={drawingId} suspend selection />
+          </Center>
+        </Resize>
+      </Bounds>
+    </group>
+  )
+}
+
+function Scene2D({ drawingId, prod, width = 50, ...props }: scene2DProps) {
+  const geometry = useRef<Group>(null)
+  const [view2dId, setview2dId] = useState<number | null>(null)
+
+  useEffect(() => {
+    const fetch2DView = async () => {
+      if (!prod) return // exit early if prod unavailable
+      try {
+        const viewIdArray = await buerli.run(api => api.create2DViews(prod, [ViewType.TOP]))
+        if (viewIdArray) {
+          const [viewId] = viewIdArray
+          console.info(viewId)
+          setview2dId(viewId)
+        }
+      } catch (error) {
+        console.error('Failed to create 2D views:', error)
+      }
+    }
+
+    fetch2DView()
+  }, [prod])
+
+  return (
+    <group {...props}>
+      <Bounds fit observe margin={1.75}>
+        <Resize scale={2}>
+          <Center top ref={geometry} rotation={[0, -Math.PI / 4, 0]}>
             {view2dId !== null && <View2d drawingId={drawingId} view2dId={view2dId} />}
           </Center>
         </Resize>

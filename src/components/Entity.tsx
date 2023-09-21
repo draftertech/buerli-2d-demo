@@ -60,6 +60,7 @@ function Item({ line, color, lineWidth }: ItemProps) {
     return new LG().setPositions(primitive.attributes.position.array)
   }, [primitive])
   const resolution = React.useMemo(() => new THREE.Vector2(size.width, size.height), [size])
+  console.info('Generated line')
   return (
     <line2 geometry={lg} userData={line} renderOrder={600}>
       <lineMaterial
