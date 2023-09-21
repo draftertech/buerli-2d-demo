@@ -1,0 +1,19 @@
+{
+  "parserOptions": {
+    "jsx": true
+  },
+  "extends": ["plugin:react/recommended", "prettier", "plugin:promise/recommended"],
+  "plugins": ["react-hooks", "react", "promise"],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+
+    "max-lines": ["error", { "max": 500, "skipComments": true }],
+    "no-console": ["error", { "allow": ["info", "warn", "error"] }],
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-shadow": ["error", { "builtinGlobals": false, "hoist": "all", "allow": [] }],
+
+    "react/prop-types": "off",
+    "react/no-unknown-property": "off"
+  }
+}
