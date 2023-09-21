@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { Group } from 'three'
 import React, { useEffect, useLayoutEffect, useRef, useState, ChangeEvent } from 'react'
 import { ViewType, history } from '@buerli.io/headless' // EdgeTypes
 import { headless, BuerliGeometry } from '@buerli.io/react'
@@ -64,7 +65,7 @@ function isValidExtension(ext: string) {
 }
 
 function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }: SceneProps) {
-  const geometry = useRef()
+  const geometry = useRef<Group>(null)
   useEffect(() => {
     if (!file) return // Don't execute if no file is selected
 
@@ -109,11 +110,12 @@ function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }: ScenePr
     geometry.current?.traverse(obj => {
       obj.receiveShadow = obj.castShadow = true
       if (obj.type === 'Mesh') {
-        obj.material = new THREE.MeshStandardMaterial({ color: 'lightgray', roughness: 1.0 })
+        const mesh = obj as THREE.Mesh
+        mesh.material = new THREE.MeshStandardMaterial({ color: 'lightgray', roughness: 1.0 })
         // This reduces z-fighting between this mesh and the line segments
-        obj.material.polygonOffset = true
-        obj.material.polygonOffsetFactor = 1
-        obj.material.polygonOffsetUnits = 1
+        mesh.material.polygonOffset = true
+        mesh.material.polygonOffsetFactor = 1
+        mesh.material.polygonOffsetUnits = 1
       }
     })
   })
