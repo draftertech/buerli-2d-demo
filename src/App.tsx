@@ -90,7 +90,6 @@ export default function App() {
               <Canvas shadows gl={{ antialias: true }} orthographic camera={{ position: [0, 2.5, 10], zoom: 100 }}>
                 <color attach="background" args={['#f0f0f0']} />
                 <ambientLight />
-                <spotLight position={[-10, 5, -15]} angle={0.2} castShadow />
                 <Scene2D drawingId={drawingId} prod={prod} />
                 <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI} />
                 <Environment preset="city" />
