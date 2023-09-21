@@ -34,6 +34,7 @@ export default function App() {
   const handleFileLoad = async (selectedFile: File) => {
     try {
       const loadedProd = await loadPartFromFile(selectedFile)
+      console.info('Loaded', selectedFile)
       setProd(loadedProd)
     } catch (error) {
       console.error('Failed to load part:', error)
