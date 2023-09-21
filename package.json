@@ -5,16 +5,36 @@
   "author": "Drafter Inc. <alex@drafterinc.com>",
   "repository": "https://github.com/draftertech/buerli-2d-demo",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "start": "vite",
+    "serve": "vite preview",
+    "build": "tsc && vite build",
+    "lint": "eslint \"./src/**/*.ts?(x)\"",
+    "prepare": "husky install"
+  },
+  "engines": {
+    "node": ">=16.14.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   },
   "lint-staged": {
-    "*.{js,jsx,json,md}": [
+    "*.{js,jsx,ts,tsx,json,md}": [
       "prettier --write"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
     ]
   },
   "dependencies": {
@@ -26,20 +46,29 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-spinners": "^0.13.8",
-    "three": "^0.152.2"
+    "three": "^0.156.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.5",
     "@types/react-dom": "^18.2.3",
+    "@types/three": "0.156.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "typescript": "^5.1.6",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
     "lint-staged": "^11.1.2",
     "prettier": "^3.0.3",
-    "vite": "^4.3.4"
+    "vite": "^4.3.4",
+    "vite-plugin-checker": "^0.6.1",
+    "vite-plugin-svgr": "^3.2.0",
+    "vite-tsconfig-paths": "^4.2.0",
+    "husky": "^8.0.0"
   }
 }
