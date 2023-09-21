@@ -7,13 +7,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "start": "vite",
+    "serve": "vite preview",
+    "build": "tsc && vite build",
+    "lint": "eslint \"./src/**/*.ts?(x)\""
   },
   "lint-staged": {
-    "*.{js,jsx,json,md}": [
+    "*.{js,jsx,ts,tsx,json,md}": [
       "prettier --write"
     ]
   },
@@ -26,11 +26,12 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-spinners": "^0.13.8",
-    "three": "^0.152.2"
+    "three": "^0.156.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.5",
     "@types/react-dom": "^18.2.3",
+    "@types/three": "0.156.0",
     "@vitejs/plugin-react": "^4.0.0",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.10.0",

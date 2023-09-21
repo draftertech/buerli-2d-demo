@@ -1,21 +1,15 @@
 import * as THREE from 'three'
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ViewType, history, EdgeTypes, ChamferType, WorkCoordSystemType } from '@buerli.io/headless'
+import { useEffect, useLayoutEffect, useRef, useState, ChangeEvent } from 'react'
+import { ViewType, history, EdgeTypes } from '@buerli.io/headless'
 import { headless, BuerliGeometry } from '@buerli.io/react'
 import { Canvas } from '@react-three/fiber'
 import {
   Resize,
   Center,
   Bounds,
-  AccumulativeShadows,
-  RandomizedLight,
   OrbitControls,
   Environment,
-  Stats,
 } from '@react-three/drei'
-import { EffectComposer, DepthOfField, Bloom, Noise, Vignette, SSAO } from '@react-three/postprocessing'
-import { ccAPI } from '@buerli.io/classcad'
-import * as core from '@buerli.io/core'
 import { message } from 'antd'
 import 'antd/dist/antd.css'
 
@@ -23,12 +17,14 @@ const buerli = headless(history, 'ws://localhost:9091')
 
 export default function App() {
   const drawingId = buerli.useDrawingId()
-  const [file, setFile] = useState(null)
+  const [file, setFile] = useState<File | null>(null);
   const [fileLoaded, setFileLoaded] = useState(null)
 
-  const handleFileChange = event => {
-    const selectedFile = event.target.files[0]
-    setFile(selectedFile)
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files && event.target.files[0]
+    if (selectedFile) {
+      setFile(selectedFile)
+    }
   }
 
   return (
@@ -43,7 +39,7 @@ export default function App() {
             style={{ display: 'none' }}
             ref={input => input && input.click()}
           />
-          <button onClick={() => document.querySelector('input[type="file"]').click()}>Select File</button>
+          <button onClick={() => document.querySelector('input[type="file"]')?.click()}>Select File</button> 
         </div>
       )}
       <Canvas shadows gl={{ antialias: true }} orthographic camera={{ position: [0, 2.5, 10], zoom: 100 }}>
