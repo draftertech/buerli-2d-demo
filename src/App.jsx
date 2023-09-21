@@ -1,25 +1,15 @@
-import * as THREE from 'three'
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ViewType, history, EdgeTypes, ChamferType, WorkCoordSystemType } from '@buerli.io/headless'
-import { headless, BuerliGeometry } from '@buerli.io/react'
+import { EdgeTypes, ViewType, history } from '@buerli.io/headless'
+import { BuerliGeometry, headless } from '@buerli.io/react'
+import { Bounds, Center, Environment, OrbitControls, Resize } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import {
-  Resize,
-  Center,
-  Bounds,
-  AccumulativeShadows,
-  RandomizedLight,
-  OrbitControls,
-  Environment,
-  Stats,
-} from '@react-three/drei'
-import { EffectComposer, DepthOfField, Bloom, Noise, Vignette, SSAO } from '@react-three/postprocessing'
-import { ccAPI } from '@buerli.io/classcad'
-import * as core from '@buerli.io/core'
 import { message } from 'antd'
 import 'antd/dist/antd.css'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import * as THREE from 'three'
 
-const buerli = headless(history, 'ws://localhost:9091')
+import View2d from './components/View2d'
+
+const buerli = headless(history, 'ws://localhost:9092')
 
 export default function App() {
   const drawingId = buerli.useDrawingId()
@@ -64,6 +54,8 @@ function isValidExtension(ext) {
 
 function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }) {
   const geometry = useRef()
+  const [view2dId, setview2dId] = useState(null)
+
   useEffect(() => {
     if (!file) return // Don't execute if no file is selected
 
@@ -82,8 +74,9 @@ function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }) {
           const result = reader.result
           const [prod] = await api.load(result, 'stp')
 
-          await api.create2DViews(prod, [ViewType.ISO])
+          const view2dId = await api.create2DViews(prod, [ViewType.TOP])
           await api.place2DViews(prod, [{ viewType: ViewType.ISO, vector: { x: 0, y: 0, z: 0 } }])
+          setview2dId(view2dId)
 
           const selection = (await api.selectGeometry(EdgeTypes, 2)).map(sel => sel.graphicId)
 
@@ -115,6 +108,7 @@ function Scene({ drawingId, file, setFileLoaded, width = 50, ...props }) {
         <Resize scale={2}>
           <Center top ref={geometry} rotation={[0, -Math.PI / 4, 0]}>
             <BuerliGeometry drawingId={drawingId} suspend selection />
+            <View2d drawingId={drawingId} view2dId={view2dId} />
           </Center>
         </Resize>
       </Bounds>
