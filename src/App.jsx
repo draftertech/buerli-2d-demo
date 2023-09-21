@@ -9,7 +9,7 @@ import * as THREE from 'three'
 
 import View2d from './components/View2d'
 
-const buerli = headless(history, 'ws://localhost:9092')
+const buerli = headless(history, 'ws://localhost:9091')
 
 export default function App() {
   const drawingId = buerli.useDrawingId()
