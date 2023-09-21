@@ -1,8 +1,17 @@
 import { useDrawing } from '@buerli.io/react'
+import { DrawingID } from '@buerli.io/core'
 import { useThree } from '@react-three/fiber'
 import React from 'react'
 import * as THREE from 'three'
+import { Color } from 'three'
 import { LineGeometry as LG } from 'three/examples/jsm/lines/LineGeometry'
+
+interface EntityProps {
+  drawingId: DrawingID
+  entityId: number
+  color: Color
+  lineWidth: number
+}
 
 /**
  * Get the geometry of the given entity and render all curve segements.
@@ -16,7 +25,12 @@ import { LineGeometry as LG } from 'three/examples/jsm/lines/LineGeometry'
  * @param drawingId The buerli drawing id
  * @param view2dId The id of the 2D view object
  */
-export default function Entity({ drawingId, entityId, color = new THREE.Color('black'), lineWidth = 3.0 }) {
+export default function Entity({
+  drawingId,
+  entityId,
+  color = new THREE.Color('black'),
+  lineWidth = 3.0,
+}: EntityProps) {
   const entity = useDrawing(drawingId, d => d.geometry.cache[entityId])
 
   const items = React.useMemo(() => {
@@ -33,7 +47,13 @@ export default function Entity({ drawingId, entityId, color = new THREE.Color('b
   )
 }
 
-function Item({ line, color, lineWidth }) {
+interface ItemProps {
+  line: any
+  color: Color
+  lineWidth: number
+}
+
+function Item({ line, color, lineWidth }: ItemProps) {
   const { size } = useThree()
   const primitive = line.geometry
   const lg = React.useMemo(() => {
